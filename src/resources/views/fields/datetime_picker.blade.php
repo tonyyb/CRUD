@@ -74,7 +74,7 @@
                 });
 
                 $picker.on('dp.change', function(e){
-                    var sqlDate = e.date.format('YYYY-MM-DD HH:mm:ss');
+                    var sqlDate = e.date ? e.date.format('YYYY-MM-DD HH:mm:ss') : null;
                     $field.val(sqlDate);
                 });
 
