@@ -147,7 +147,7 @@
                 if(crop){
 
                     $remove.click(function() {
-                        if ($mainImage.length) {
+                        if ($mainImage !== null && $mainImage.length) {
                             $mainImage.cropper("destroy");
                             $mainImage.remove();
                             $mainImage = null;
