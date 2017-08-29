@@ -3,8 +3,8 @@
 namespace Backpack\CRUD;
 
 use Route;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Validator;
 
 class CrudServiceProvider extends ServiceProvider
