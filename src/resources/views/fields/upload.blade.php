@@ -13,7 +13,7 @@
     @endif
 
     <div class="js-parent-input">
-        @if (isset($field['value']) && $field['value']!=null)
+        @if (!empty($field['value']))
             {{-- Display an hidden file an fill it with DB value. --}}
             <input
                     type="hidden"
@@ -27,8 +27,15 @@
                     type="file"
                     id="{{ $field['name'] }}_file_input"
                     name="{{ $field['name'] }}"
-                    value="{{ isset($field['default']) ? $field['default'] : '' }}"
+                    value=""
                     @include('crud::inc.field_attributes', ['default_class' => 'form-control']) />
+            @if (!empty($field['default']))
+                <input
+                        type="hidden"
+                        name="{{ $field['name'] }}"
+                        value="{{ $field['default'] }}"
+                />
+            @endif
         @endif
     </div>
 
