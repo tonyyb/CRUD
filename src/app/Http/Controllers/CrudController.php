@@ -37,6 +37,7 @@ class CrudController extends BaseController
                 $this->request = $request;
                 $this->crud->request = $request;
                 $this->setup();
+                $this->crud->initPermissions();
 
                 return $next($request);
             });
@@ -48,6 +49,7 @@ class CrudController extends BaseController
      */
     public function setup()
     {
+
     }
 
     /**
@@ -220,4 +222,5 @@ class CrudController extends BaseController
 
         return $this->crud->delete($id);
     }
+
 }

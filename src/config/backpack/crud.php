@@ -57,6 +57,14 @@ return [
     */
 
     /*
+    |------------
+    | PERMISSIONS
+    |------------
+    */
+    'activate_permissions_system' => false, // Set to true if you want activate permission system (require PermissionManager)
+    'apply_new_permissions_to_connected_user' => true, // Set to false in production environment
+
+    /*
     |-------------------
     | TRANSLATABLE CRUDS
     |-------------------
