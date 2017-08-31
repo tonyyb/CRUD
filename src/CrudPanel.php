@@ -260,17 +260,21 @@ class CrudPanel
      * Init permissions system to current CRUD
      * Available only if Backpack\PermissionManager is installed and "activate_permissions_system" configuration set to true
      *
+     * @param string $controllerNamespace : specify controllerNamespace if called from command
      * @return bool
      */
-    public function initPermissions()
+    public function initPermissions($controllerNamespace = '')
     {
         if (!$this->permissionsSystemAvailable()) {
             return false;
         }
 
-        $routeDetails = request()->route()->getAction();
-        $controllerDetails = explode('@', array_get($routeDetails, 'controller'));
-        $controllerNamespace = array_shift($controllerDetails);
+        if (!app()->runningInConsole()) {
+            $routeDetails = request()->route()->getAction();
+            $controllerDetails = explode('@', array_get($routeDetails, 'controller'));
+            $controllerNamespace = array_shift($controllerDetails);
+        }
+
         $permissionsPrefix = $this->getPermissionsPrefix($controllerNamespace);
 
         // Create permissions of current CRUD Controller if not exists
@@ -346,9 +350,11 @@ class CrudPanel
             if (config('backpack.crud.apply_new_permissions_to_connected_user', false)) {
                 // Gives to connected user the new permissions
                 $user = Auth::user();
-                $permissionsToInsert->each(function ($permissionName, $key) use ($user) {
-                    $user->givePermissionTo($permissionName);
-                });
+                if (!empty($user)) {
+                    $permissionsToInsert->each(function ($permissionName, $key) use ($user) {
+                        $user->givePermissionTo($permissionName);
+                    });
+                }
             }
         }
     }
@@ -375,6 +381,9 @@ class CrudPanel
     {
         $availablePermissions = $this->getPermissions($permissionsPrefix);
         $user = Auth::user();
+        if (empty($user)) {
+            return;
+        }
 
         $availablePermissions->each(function ($permissionName, $key) use ($user) {
             if (!$user->hasPermissionTo($permissionName)) {
