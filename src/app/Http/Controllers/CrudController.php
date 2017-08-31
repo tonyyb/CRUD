@@ -49,7 +49,6 @@ class CrudController extends BaseController
      */
     public function setup()
     {
-
     }
 
     /**
@@ -222,5 +221,4 @@ class CrudController extends BaseController
 
         return $this->crud->delete($id);
     }
-
 }
