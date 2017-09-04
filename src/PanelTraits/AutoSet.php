@@ -52,7 +52,7 @@ trait AutoSet
         $table_columns = $this->model->getConnection()->getSchemaBuilder()->getColumnListing($this->model->getTable());
 
         foreach ($table_columns as $key => $column) {
-            $cacheNameSuffix= $this->model->getConnection()->getDatabaseName().'-'.$this->model->getTable().'-'.$column;
+            $cacheNameSuffix = $this->model->getConnection()->getDatabaseName().'-'.$this->model->getTable().'-'.$column;
             $column_type = Cache::rememberForever('backpack_crud::column_type::'.$cacheNameSuffix, function () use ($column) {
                 return $this->model->getConnection()->getSchemaBuilder()->getColumnType($this->model->getTable(), $column);
             });
