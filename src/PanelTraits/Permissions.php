@@ -107,7 +107,7 @@ trait Permissions
             if (!empty($this->controller)) {
 
                 // Splits the controller's namespace and extracts the class name
-                $namespaceParts = collect(explode('\\', trim($this->controller, '\\')));
+                $namespaceParts = collect(explode('\\', trim(get_class($this->controller), '\\')));
                 $className = $namespaceParts->pop();
 
                 $namespaceParts = $namespaceParts->map(function ($value) {
