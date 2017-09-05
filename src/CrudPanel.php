@@ -2,6 +2,7 @@
 
 namespace Backpack\CRUD;
 
+use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\PanelTraits\Read;
 use Backpack\CRUD\PanelTraits\Tabs;
 use Backpack\CRUD\PanelTraits\Query;
@@ -21,10 +22,11 @@ use Backpack\CRUD\PanelTraits\AutoFocus;
 use Backpack\CRUD\PanelTraits\FakeFields;
 use Backpack\CRUD\PanelTraits\FakeColumns;
 use Backpack\CRUD\PanelTraits\ViewsAndRestoresRevisions;
+use Backpack\CRUD\PanelTraits\Permissions;
 
 class CrudPanel
 {
-    use Create, Read, Update, Delete, Errors, Reorder, Access, Columns, Fields, Query, Buttons, AutoSet, FakeFields, FakeColumns, ViewsAndRestoresRevisions, AutoFocus, Filters, Tabs, Views;
+    use Create, Read, Update, Delete, Errors, Reorder, Access, Columns, Fields, Query, Buttons, AutoSet, FakeFields, FakeColumns, ViewsAndRestoresRevisions, AutoFocus, Filters, Tabs, Views, Permissions;
 
     // --------------
     // CRUD variables
@@ -40,6 +42,7 @@ class CrudPanel
     public $entity_name = 'entry'; // what name will show up on the buttons, in singural (ex: Add entity)
     public $entity_name_plural = 'entries'; // what name will show up on the buttons, in plural (ex: Delete 5 entities)
     public $request;
+    public $controller; // a reference to the controller from which this CrudPanel was instantiated
 
     public $access = ['list', 'create', 'update', 'delete'/* 'revisions', reorder', 'show', 'details_row' */];
 
@@ -84,7 +87,7 @@ class CrudPanel
      */
     public function setModel($model_namespace)
     {
-        if (! class_exists($model_namespace)) {
+        if (!class_exists($model_namespace)) {
             throw new \Exception('This model does not exist.', 404);
         }
 
@@ -125,7 +128,7 @@ class CrudPanel
     {
         $complete_route = $route.'.index';
 
-        if (! \Route::has($complete_route)) {
+        if (!\Route::has($complete_route)) {
             throw new \Exception('There are no routes for this route name.', 404);
         }
 
@@ -169,7 +172,7 @@ class CrudPanel
      * Return the first element in an array that has the given 'type' attribute.
      *
      * @param string $type
-     * @param array  $array
+     * @param array $array
      *
      * @return array
      */
@@ -192,9 +195,9 @@ class CrudPanel
 
     public function sync($type, $fields, $attributes)
     {
-        if (! empty($this->{$type})) {
+        if (!empty($this->{$type})) {
             $this->{$type} = array_map(function ($field) use ($fields, $attributes) {
-                if (in_array($field['name'], (array) $fields)) {
+                if (in_array($field['name'], (array)$fields)) {
                     $field = array_merge($field, $attributes);
                 }
 
@@ -220,7 +223,7 @@ class CrudPanel
             }
 
             return $this->{$items} = array_merge($elements, array_filter($this->{$items}, function ($item) use ($items) {
-                return ! in_array($item['name'], $this->sort[$items]);
+                return !in_array($item['name'], $this->sort[$items]);
             }));
         }
 
