@@ -9,35 +9,33 @@ class PermissionsCommand extends Command
 {
     protected $signature = 'permissions:generate';
 
-    protected $description = 'Insert in database permissions for each CRUD controllers.';
+    protected $description = 'Discovers permissions for each CRUD controllers and creates them in database.';
 
+    /**
+     * Create permissions in database for each CRUD controllers.
+     *
+     * Available only if Backpack\PermissionManager is installed and if "apply_permissions"
+     * is enabled (see the configuration file config/backpack/crud.php).
+     */
     public function handle()
     {
-        if (!$this->permissionsSystemAvailable()) {
+        // Checks if the PermissionManagerServiceProvider exists
+        if (!class_exists('Backpack\PermissionManager\PermissionManagerServiceProvider')) {
             return $this->error('Pemissions system not available.');
         }
 
-        $routes = collect(Route::getRoutes());
-        $routes->each(function($route, $key) {
-            if (str_contains($route->getName(), 'crud') ) {
-                $controller = $route->getController();
-                if (!empty($controller->crud) && method_exists($controller->crud, 'initPermissions')) {
-                    $controller->crud->initPermissions(get_class($controller));
+        collect(Route::getRoutes())
+            // Keeps only the routes handled by a CRUD controller
+            ->filter(function($route) {
+                return is_subclass_of($route->getController(), CrudController::class);
+            })
+            // Creates the missing permissions for each of them
+            ->each(function($route) {
+                if (method_exists($route->getController()->crud, 'createMissingPermissions')) {
+                    $route->getController()->crud->createMissingPermissions();
                 }
-            }
-        });
+            });
 
         return $this->info('Permissions successfully installed.');
-    }
-
-    /**
-     * Is the system of automatic permissions available ?
-     *
-     * @return bool
-     */
-    protected function permissionsSystemAvailable()
-    {
-        return class_exists('Backpack\PermissionManager\PermissionManagerServiceProvider') &&
-            config('backpack.crud.activate_permissions_system', false);
     }
 }
