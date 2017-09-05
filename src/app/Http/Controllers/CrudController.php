@@ -62,17 +62,6 @@ class CrudController extends BaseController
     }
 
     /**
-     * Allows developers to execute operations after setup
-     */
-    public function afterSetup()
-    {
-        // Initializes the CRUD permissions
-        if (method_exists($this->crud, 'initPermissions')) {
-            $this->crud->initPermissions();
-        }
-    }
-
-    /**
      * Display all rows in the database for this entity.
      *
      * @return Response

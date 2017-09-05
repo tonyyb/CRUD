@@ -9,7 +9,7 @@ class PermissionsCommand extends Command
 {
     protected $signature = 'permissions:generate';
 
-    protected $description = 'Discovers permissions for each CRUD controllers and creates them in database.';
+    protected $description = 'Insert permissions in database for each CRUD controllers.';
 
     /**
      * Create permissions in database for each CRUD controllers.
