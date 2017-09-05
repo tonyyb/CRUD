@@ -69,7 +69,7 @@ return [
     //
     // This prefix will then be used to match the permissions handled by the permission manager.
     //
-    'apply_permissions' => true,
+    'apply_permissions' => false,
 
     // Creates the CRUD's permissions in database while browsing in admin.
     'create_permissions_while_browsing' => false,
