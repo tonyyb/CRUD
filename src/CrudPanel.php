@@ -2,7 +2,6 @@
 
 namespace Backpack\CRUD;
 
-use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\PanelTraits\Read;
 use Backpack\CRUD\PanelTraits\Tabs;
 use Backpack\CRUD\PanelTraits\Query;
