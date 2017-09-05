@@ -14,14 +14,13 @@ class PermissionsCommand extends Command
     /**
      * Create permissions in database for each CRUD controllers.
      *
-     * Available only if Backpack\PermissionManager is installed and if "apply_permissions"
-     * is enabled (see the configuration file config/backpack/crud.php).
+     * Available only if Backpack\PermissionManager is installed
      */
     public function handle()
     {
         // Checks if the PermissionManagerServiceProvider exists
         if (!class_exists('Backpack\PermissionManager\PermissionManagerServiceProvider')) {
-            return $this->error('Pemissions system not available.');
+            return $this->error('Requires the package Backpack\PermissionManager.');
         }
 
         collect(Route::getRoutes())
@@ -36,6 +35,6 @@ class PermissionsCommand extends Command
                 }
             });
 
-        return $this->info('Permissions successfully installed.');
+        return $this->info('Permissions successfully generated.');
     }
 }
