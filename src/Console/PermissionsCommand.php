@@ -2,6 +2,7 @@
 
 namespace Backpack\CRUD\Console;
 
+use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Route;
 
@@ -9,35 +10,42 @@ class PermissionsCommand extends Command
 {
     protected $signature = 'permissions:generate';
 
-    protected $description = 'Insert in database permissions for each CRUD controllers.';
-
-    public function handle()
-    {
-        if (!$this->permissionsSystemAvailable()) {
-            return $this->error('Pemissions system not available.');
-        }
-
-        $routes = collect(Route::getRoutes());
-        $routes->each(function($route, $key) {
-            if (str_contains($route->getName(), 'crud') ) {
-                $controller = $route->getController();
-                if (!empty($controller->crud) && method_exists($controller->crud, 'initPermissions')) {
-                    $controller->crud->initPermissions(get_class($controller));
-                }
-            }
-        });
-
-        return $this->info('Permissions successfully installed.');
-    }
+    protected $description = 'Insert permissions in database for each CRUD controllers.';
 
     /**
-     * Is the system of automatic permissions available ?
+     * Create permissions in database for each CRUD controllers.
      *
-     * @return bool
+     * Available only if Backpack\PermissionManager is installed
      */
-    protected function permissionsSystemAvailable()
+    public function handle()
     {
-        return class_exists('Backpack\PermissionManager\PermissionManagerServiceProvider') &&
-            config('backpack.crud.activate_permissions_system', false);
+        // Checks if the PermissionManagerServiceProvider exists
+        if (!class_exists('Backpack\PermissionManager\PermissionManagerServiceProvider')) {
+            return $this->error('Requires the package Backpack\PermissionManager.');
+        }
+
+        // Gets all routes
+        collect(Route::getRoutes())
+
+            // Groups routes by controller
+            ->groupBy(function($route) {
+                list($controller) = explode('@', array_get($route->getAction(), 'controller'));
+                return $controller;
+            })
+
+            // Keeps only the routes handled by a CRUD controller
+            ->filter(function($routes, $controller) {
+                return !empty($controller) && is_subclass_of($controller, CrudController::class);
+            })
+
+            // Creates the permissions
+            ->each(function($routes) {
+                $route = $routes->first();
+                if (method_exists($route->getController()->crud, 'createMissingPermissions')) {
+                    $route->getController()->crud->createMissingPermissions();
+                }
+            });
+
+        return $this->info('Permissions successfully generated.');
     }
 }

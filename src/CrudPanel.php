@@ -21,13 +21,11 @@ use Backpack\CRUD\PanelTraits\AutoFocus;
 use Backpack\CRUD\PanelTraits\FakeFields;
 use Backpack\CRUD\PanelTraits\FakeColumns;
 use Backpack\CRUD\PanelTraits\ViewsAndRestoresRevisions;
-use Carbon\Carbon;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
+use Backpack\CRUD\PanelTraits\Permissions;
 
 class CrudPanel
 {
-    use Create, Read, Update, Delete, Errors, Reorder, Access, Columns, Fields, Query, Buttons, AutoSet, FakeFields, FakeColumns, ViewsAndRestoresRevisions, AutoFocus, Filters, Tabs, Views;
+    use Create, Read, Update, Delete, Errors, Reorder, Access, Columns, Fields, Query, Buttons, AutoSet, FakeFields, FakeColumns, ViewsAndRestoresRevisions, AutoFocus, Filters, Tabs, Views, Permissions;
 
     // --------------
     // CRUD variables
@@ -43,6 +41,7 @@ class CrudPanel
     public $entity_name = 'entry'; // what name will show up on the buttons, in singural (ex: Add entity)
     public $entity_name_plural = 'entries'; // what name will show up on the buttons, in plural (ex: Delete 5 entities)
     public $request;
+    public $controller; // a reference to the controller from which this CrudPanel was instantiated
 
     public $access = ['list', 'create', 'update', 'delete'/* 'revisions', reorder', 'show', 'details_row' */];
 
@@ -66,9 +65,6 @@ class CrudPanel
 
     // TONE FIELDS - TODO: find out what he did with them, replicate or delete
     public $sort = [];
-
-    protected $availablePermissions = ['list', 'create', 'update', 'delete'];
-    protected $permissionsPrefix;
 
     // The following methods are used in CrudController or your EntityCrudController to manipulate the variables above.
 
@@ -254,142 +250,5 @@ class CrudPanel
         }, $this->model);
 
         return get_class($result);
-    }
-
-    /**
-     * Init permissions system to current CRUD
-     * Available only if Backpack\PermissionManager is installed and "activate_permissions_system" configuration set to true
-     *
-     * @param string $controllerNamespace : specify controllerNamespace if called from command
-     * @return bool
-     */
-    public function initPermissions($controllerNamespace = '')
-    {
-        if (!$this->permissionsSystemAvailable()) {
-            return false;
-        }
-
-        if (!app()->runningInConsole()) {
-            $routeDetails = request()->route()->getAction();
-            $controllerDetails = explode('@', array_get($routeDetails, 'controller'));
-            $controllerNamespace = array_shift($controllerDetails);
-        }
-
-        $permissionsPrefix = $this->getPermissionsPrefix($controllerNamespace);
-
-        // Create permissions of current CRUD Controller if not exists
-        $this->createPermissionsIfNotExists($permissionsPrefix);
-        // Deny or allow access of this CRUD from user permissions
-        $this->initCrudWithPermissions($permissionsPrefix);
-
-        return true;
-    }
-
-    /**
-     * Gives the possibility to override permissions prefix for the CRUD (in setup() method of CrudController)
-     *
-     * @param $permissionsPrefix
-     */
-    public function setPermissionsPrefix($permissionsPrefix)
-    {
-        $this->permissionsPrefix = (string) $permissionsPrefix;
-    }
-
-    /**
-     * Is the system of automatic permissions available ?
-     *
-     * @return bool
-     */
-    protected function permissionsSystemAvailable()
-    {
-        return class_exists('Backpack\PermissionManager\PermissionManagerServiceProvider') &&
-            config('backpack.crud.activate_permissions_system', false);
-    }
-
-    /**
-     * Get the permission prefix of this CRUD
-     *
-     * @param $controllerNamespace
-     * @return string
-     */
-    protected function getPermissionsPrefix($controllerNamespace)
-    {
-        $prefix = $this->permissionsPrefix;
-        if (empty($prefix)) {
-            $prefix = str_replace(['controller', 'crud'], '', strtolower(class_basename($controllerNamespace)));
-        }
-
-        return (string) $prefix;
-    }
-
-    /**
-     * Insert available permissions of current CRUD to DB if not exists
-     *
-     * @param string $permissionsPrefix
-     */
-    protected function createPermissionsIfNotExists($permissionsPrefix)
-    {
-        $availablePermissions = $this->getPermissions($permissionsPrefix);
-        $permissions = \Backpack\PermissionManager\app\Models\Permission::where('name', 'like', $permissionsPrefix.'::%')
-            ->get(['name'])
-            ->pluck('name');
-        // Get permissions not created in DB
-        $permissionsToInsert = $availablePermissions->diff($permissions);
-
-        if (!empty($permissionsToInsert)) {
-            // Add missing permissions to DB
-            $datas = $permissionsToInsert->map(function ($permissionName, $key) {
-                return ['name' => $permissionName, 'created_at' => Carbon::now()];
-            });
-
-            \Backpack\PermissionManager\app\Models\Permission::insert($datas->toArray());
-
-            // Forget permissions cache
-            app(\Backpack\PermissionManager\app\Models\Permission::class)->forgetCachedPermissions();
-
-            if (config('backpack.crud.apply_new_permissions_to_connected_user', false)) {
-                // Gives to connected user the new permissions
-                $user = Auth::user();
-                if (!empty($user)) {
-                    $permissionsToInsert->each(function ($permissionName, $key) use ($user) {
-                        $user->givePermissionTo($permissionName);
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * @param string $permissionsPrefix
-     * @return Collection
-     */
-    protected function getPermissions($permissionsPrefix)
-    {
-        $availablePermissions = collect($this->availablePermissions)->map(function ($item, $key) use ($permissionsPrefix) {
-            return $permissionsPrefix.'::'.$item;
-        });
-
-        return $availablePermissions;
-    }
-
-    /**
-     * Call deny access if user has not the permission to current action
-     *
-     * @param string $permissionsPrefix
-     */
-    protected function initCrudWithPermissions($permissionsPrefix)
-    {
-        $availablePermissions = $this->getPermissions($permissionsPrefix);
-        $user = Auth::user();
-        if (empty($user)) {
-            return;
-        }
-
-        $availablePermissions->each(function ($permissionName, $key) use ($user) {
-            if (!$user->hasPermissionTo($permissionName)) {
-                $permissionToDeny = str_after($permissionName, '::');
-                $this->denyAccess($permissionToDeny);
-            }
-        });
     }
 }
