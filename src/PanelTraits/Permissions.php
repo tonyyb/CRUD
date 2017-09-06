@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
+use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 
 trait Permissions
 {
@@ -57,9 +58,11 @@ trait Permissions
     {
         // Assigns all permissions to user
         $this->getPermissions()->each(function ($permission, $key) use ($user) {
-            if (!$user->hasPermissionTo($permission)) {
-                $user->givePermissionTo($permission);
-            }
+            try {
+                if (!$user->hasPermissionTo($permission)) {
+                    $user->givePermissionTo($permission);
+                }
+            } catch (PermissionDoesNotExist $e) {}
         });
 
         // Reloads user permissions
@@ -245,7 +248,12 @@ trait Permissions
 
         // Denies access for each permission that the user has not
         $permissions->each(function ($permission, $key) use ($user) {
-            if (!$user->hasPermissionTo($permission)) {
+            try {
+                if (!$user->hasPermissionTo($permission)) {
+                    $this->denyAccess($this->extractPermissionKey($permission));
+                }
+            } catch (PermissionDoesNotExist $e) {
+                // If permission does not exists : we deny access for security reasons
                 $this->denyAccess($this->extractPermissionKey($permission));
             }
         });
