@@ -105,7 +105,6 @@ trait Permissions
     public function getDefaultPermissionPrefix($cached = true)
     {
         if (is_null($this->defaultPermissionPrefix) || ! $cached) {
-
             $this->defaultPermissionPrefix = '';
 
             if (! empty($this->controller)) {
