@@ -87,7 +87,7 @@ trait Permissions
      */
     public function getPermissionPrefix()
     {
-        if (!is_null($this->permissionsPrefix)) {
+        if (! is_null($this->permissionsPrefix)) {
             $prefix = $this->permissionsPrefix;
         } else {
             $prefix = $this->getDefaultPermissionPrefix();
@@ -135,7 +135,7 @@ trait Permissions
                 // Builds the prefix
                 $prefix = implode('.', array_merge($namespaceParts->toArray(), [$className]));
 
-                $this->defaultPermissionPrefix = (string)$prefix;
+                $this->defaultPermissionPrefix = (string) $prefix;
             }
         }
 

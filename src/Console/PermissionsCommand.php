@@ -36,7 +36,7 @@ class PermissionsCommand extends Command
 
             // Keeps only the routes handled by a CRUD controller
             ->filter(function ($routes, $controller) {
-                return !empty($controller) && is_subclass_of($controller, CrudController::class);
+                return ! empty($controller) && is_subclass_of($controller, CrudController::class);
             })
 
             // Creates the permissions
