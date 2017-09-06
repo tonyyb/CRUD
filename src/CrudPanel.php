@@ -20,8 +20,8 @@ use Backpack\CRUD\PanelTraits\Reorder;
 use Backpack\CRUD\PanelTraits\AutoFocus;
 use Backpack\CRUD\PanelTraits\FakeFields;
 use Backpack\CRUD\PanelTraits\FakeColumns;
-use Backpack\CRUD\PanelTraits\ViewsAndRestoresRevisions;
 use Backpack\CRUD\PanelTraits\Permissions;
+use Backpack\CRUD\PanelTraits\ViewsAndRestoresRevisions;
 
 class CrudPanel
 {

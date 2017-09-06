@@ -24,7 +24,7 @@ trait Permissions
     public function initPermissions()
     {
         // Checks if the PermissionManagerServiceProvider exists
-        if (!class_exists('Backpack\PermissionManager\PermissionManagerServiceProvider')) {
+        if (! class_exists('Backpack\PermissionManager\PermissionManagerServiceProvider')) {
             return false;
         }
 
@@ -36,7 +36,7 @@ trait Permissions
         // Gives the current's CRUD permissions to the currently connected user
         if (config('backpack.crud.give_permissions_to_current_user_while_browsing', false)) {
             $user = Auth::user();
-            if (!empty($user)) {
+            if (! empty($user)) {
                 $this->givePermissionsToUser($user);
             }
         }
@@ -59,10 +59,11 @@ trait Permissions
         // Assigns all permissions to user
         $this->getPermissions()->each(function ($permission, $key) use ($user) {
             try {
-                if (!$user->hasPermissionTo($permission)) {
+                if (! $user->hasPermissionTo($permission)) {
                     $user->givePermissionTo($permission);
                 }
-            } catch (PermissionDoesNotExist $e) {}
+            } catch (PermissionDoesNotExist $e) {
+            }
         });
 
         // Reloads user permissions
@@ -80,7 +81,7 @@ trait Permissions
     }
 
     /**
-     * Gets the permission prefix
+     * Gets the permission prefix.
      *
      * @return string
      */
@@ -96,18 +97,18 @@ trait Permissions
     }
 
     /**
-     * Get the default permission prefix (derived from the controller's namespace)
+     * Get the default permission prefix (derived from the controller's namespace).
      *
      * @param bool $cached
      * @return string
      */
     public function getDefaultPermissionPrefix($cached = true)
     {
-        if (is_null($this->defaultPermissionPrefix) || !$cached) {
+        if (is_null($this->defaultPermissionPrefix) || ! $cached) {
 
             $this->defaultPermissionPrefix = '';
 
-            if (!empty($this->controller)) {
+            if (! empty($this->controller)) {
 
                 // Splits the controller's namespace and extracts the class name
                 $namespaceParts = collect(explode('\\', trim(get_class($this->controller), '\\')));
@@ -158,7 +159,7 @@ trait Permissions
     }
 
     /**
-     * Gets the prefixed permission item
+     * Gets the prefixed permission item.
      *
      * @param $item
      * @return string
@@ -169,7 +170,7 @@ trait Permissions
 
         // Adds the prefix
         $prefix = $this->getPermissionPrefix();
-        if (!empty($prefix)) {
+        if (! empty($prefix)) {
             $permission = $prefix.'::'.$permission;
         }
 
@@ -197,7 +198,7 @@ trait Permissions
     }
 
     /**
-     * Creates the missing permissions in database
+     * Creates the missing permissions in database.
      *
      * @return Collection
      */
@@ -212,7 +213,7 @@ trait Permissions
     }
 
     /**
-     * Creates the specified permissions in database
+     * Creates the specified permissions in database.
      *
      * @param Collection $permissions
      * @return bool
@@ -233,7 +234,7 @@ trait Permissions
     }
 
     /**
-     * Initializes the CRUD access from the current user's permissions
+     * Initializes the CRUD access from the current user's permissions.
      */
     protected function initCrudAccessFromUserPermissions()
     {
@@ -249,7 +250,7 @@ trait Permissions
         // Denies access for each permission that the user has not
         $permissions->each(function ($permission, $key) use ($user) {
             try {
-                if (!$user->hasPermissionTo($permission)) {
+                if (! $user->hasPermissionTo($permission)) {
                     $this->denyAccess($this->extractPermissionKey($permission));
                 }
             } catch (PermissionDoesNotExist $e) {
@@ -260,7 +261,7 @@ trait Permissions
     }
 
     /**
-     * Extracts the permission key
+     * Extracts the permission key.
      *
      * @param $permission
      * @return string

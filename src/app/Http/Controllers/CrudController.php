@@ -29,7 +29,6 @@ class CrudController extends BaseController
     public function __construct()
     {
         if (! $this->crud) {
-
             $this->crud = app()->make(CrudPanel::class);
 
             // Stores a reference to the current controller

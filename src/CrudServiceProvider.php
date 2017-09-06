@@ -2,9 +2,9 @@
 
 namespace Backpack\CRUD;
 
-use Backpack\CRUD\Console\PermissionsCommand;
 use Route;
 use Illuminate\Support\ServiceProvider;
+use Backpack\CRUD\Console\PermissionsCommand;
 
 class CrudServiceProvider extends ServiceProvider
 {

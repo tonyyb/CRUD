@@ -2,9 +2,9 @@
 
 namespace Backpack\CRUD\Console;
 
-use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Route;
+use Backpack\CRUD\app\Http\Controllers\CrudController;
 
 class PermissionsCommand extends Command
 {
@@ -20,7 +20,7 @@ class PermissionsCommand extends Command
     public function handle()
     {
         // Checks if the PermissionManagerServiceProvider exists
-        if (!class_exists('Backpack\PermissionManager\PermissionManagerServiceProvider')) {
+        if (! class_exists('Backpack\PermissionManager\PermissionManagerServiceProvider')) {
             return $this->error('Requires the package Backpack\PermissionManager.');
         }
 
@@ -28,18 +28,19 @@ class PermissionsCommand extends Command
         collect(Route::getRoutes())
 
             // Groups routes by controller
-            ->groupBy(function($route) {
+            ->groupBy(function ($route) {
                 list($controller) = explode('@', array_get($route->getAction(), 'controller'));
+
                 return $controller;
             })
 
             // Keeps only the routes handled by a CRUD controller
-            ->filter(function($routes, $controller) {
+            ->filter(function ($routes, $controller) {
                 return !empty($controller) && is_subclass_of($controller, CrudController::class);
             })
 
             // Creates the permissions
-            ->each(function($routes) {
+            ->each(function ($routes) {
                 $route = $routes->first();
                 if (method_exists($route->getController()->crud, 'createMissingPermissions')) {
                     $route->getController()->crud->createMissingPermissions();
